@@ -35,107 +35,116 @@ x-data="{type:'all'}" class="flex flex-col transition-all h-full overflow-hidden
         {{-- chatlist --}}
 
         <ul class="p-2 grid w-full spacey-y-2">
-            <li class="py-3 hover:bg-gray-50 rounded-2xl dark:hover:bg-gray-700/70 transition-colors duration-150 flex gap-4 relative w-full cursor-pointer px-2">
-                {{-- Na esquerda avatar, na direia os detalhes--}}
-                <a href="#" class="shrink-0">
-                    <x-avatar  />
-                </a>
 
-                <aside class="grid grid-cols-12 w-full">
-                    <a href="#" class="col-span-11 border-b pb-2 border-gray-200 relative overflow-hidden truncate leading-5 w-full flex-nowrap p-1">
+            @if ($conversas) {{--ve se ele tem conversa para carregar com loop --}}
 
-                        {{-- Nome e Data--}}
+            @foreach ($conversas as $conversa)
 
-                        <div class="flex justify-between w-full items-center">
-
-                            <h6 class="truncate font-medium tracking-wider text-gray-900">
-                                Fulano
-                            </h6>
-
-                            <small class="text-gray-700">5d</small>
-
-                        </div>
-
-                        {{-- Corpo da mensagem --}}
-
-                        <div class="flex gap-x-2 items-center">
-
-                            {{-- Dois risquinhos--}}
-                            <span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                                    <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0l7-7zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0z"/>
-                                    <path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708z"/>
-                                  </svg>
-                            </span>
-                            
-                            {{-- Um risquinho--}}
-                            {{-- <span>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
-                                    <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
-                                </svg>
-                            </span> --}}
-
-                            <p class="grow truncate text-sm font-[100]">
-                                Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolor asperiores possimus laboriosam tenetur iure tempore voluptatem unde labore quae quis error, fugiat repellendus quisquam enim, eligendi similique velit cupiditate! Nostrum!
-                             </p>
-
-                            {{-- Mensagens não lidas--}}
-                            <span class="font-bold p-px px-2 text-xs shrink-0 rounded-full bg-blue-500 text-white">
-                                5
-                            </span>
-
-                        </div>
-
+                <li class="py-3 hover:bg-gray-50 rounded-2xl dark:hover:bg-gray-700/70 transition-colors duration-150 flex gap-4 relative w-full cursor-pointer px- {{$conversa->id == $conversaSelecionada->id ? 'bg-gray-100/90' : ''}}"> {{-- A conversa qur tiver o idigual da selecionada vai receber um destaque --}}
+                    {{-- Na esquerda avatar, na direia os detalhes--}}
+                    <a href="#" class="shrink-0">
+                        <x-avatar  src="https://i1.sndcdn.com/artworks-LnLz9a9cajXZs4f7-ht8G0Q-t500x500.jpg"/>
                     </a>
 
-                    {{-- Dropdown opções: copiado do breeze--}}
-                    <div class="col-span-1 flex flex-col text-center my-auto">
+                    <aside class="grid grid-cols-12 w-full">
+                        <a href="{{route('chat', $conversa->id)}}" class="col-span-11 border-b pb-2 border-gray-200 relative overflow-hidden truncate leading-5 w-full flex-nowrap p-1">
 
-                        <x-dropdown align="right" width="48">
-                            <x-slot name="trigger">
-                                <button>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical w-7 h-7 text-gray-700" viewBox="0 0 16 16">
-                                        <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
-                                      </svg>
-                                </button>
-                            </x-slot>
-        
-                            <x-slot name="content">
-                                <div class="w-full p-1">
+                            {{-- Nome e Data--}}
 
-                                    <button class="items-center gap-3 flex w-full px-4 py-2 text-left text-sm leading-5 text-gray-500 hover:bg-gray-100 transition-all duration-150 ease-in-out focus:outline-none focus:bg-gray-100">
+                            <div class="flex justify-between w-full items-center">
 
-                                        <span>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
-                                                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
-                                                <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
-                                              </svg>
-                                        </span>
+                                <h6 class="truncate font-medium tracking-wider text-gray-900">
+                                    {{$conversa->getDestinatario()->name}}
+                                </h6>
 
-                                        Ver perfil
+                                <small class="text-gray-700">{{$conversa->mensagem?->last()?->created_at?->shortAbsoluteDiffForHumans()}}</small>         {{--Puxa o created at da ultima mensagem daquela conversa--}}
 
-                                    </button>  
+                            </div>
 
-                                    <button class="items-center gap-3 flex w-full px-4 py-2 text-left text-sm leading-5 text-gray-500 hover:bg-gray-100 transition-all duration-150 ease-in-out focus:outline-none focus:bg-gray-100">
+                            {{-- Corpo da mensagem --}}
 
-                                        <span>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
-                                                <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
-                                              </svg>
-                                        </span>
+                            <div class="flex gap-x-2 items-center">
 
-                                        Deletar
+                                {{-- Dois risquinhos--}}
+                                <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                                        <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0l7-7zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0z"/>
+                                        <path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708z"/>
+                                    </svg>
+                                </span>
+                                
+                                {{-- Um risquinho--}}
+                                {{-- <span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+                                        <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+                                    </svg>
+                                </span> --}}
 
+                                <p class="grow truncate text-sm font-[100]">
+                                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolor asperiores possimus laboriosam tenetur iure tempore voluptatem unde labore quae quis error, fugiat repellendus quisquam enim, eligendi similique velit cupiditate! Nostrum!
+                                </p>
+
+                                {{-- Mensagens não lidas--}}
+                                <span class="font-bold p-px px-2 text-xs shrink-0 rounded-full bg-blue-500 text-white">
+                                    5
+                                </span>
+
+                            </div>
+
+                        </a>
+
+                        {{-- Dropdown opções: copiado do breeze--}}
+                        <div class="col-span-1 flex flex-col text-center my-auto">
+
+                            <x-dropdown align="right" width="48">
+                                <x-slot name="trigger">
+                                    <button>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-three-dots-vertical w-7 h-7 text-gray-700" viewBox="0 0 16 16">
+                                            <path d="M9.5 13a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0zm0-5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                                        </svg>
                                     </button>
+                                </x-slot>
+            
+                                <x-slot name="content">
+                                    <div class="w-full p-1">
 
-                            </x-slot>
-                        </x-dropdown>
+                                        <button class="items-center gap-3 flex w-full px-4 py-2 text-left text-sm leading-5 text-gray-500 hover:bg-gray-100 transition-all duration-150 ease-in-out focus:outline-none focus:bg-gray-100">
 
-                    </div>
-                </aside>
+                                            <span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person-circle" viewBox="0 0 16 16">
+                                                    <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"/>
+                                                    <path fill-rule="evenodd" d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"/>
+                                                </svg>
+                                            </span>
+
+                                            Ver perfil
+
+                                        </button>  
+
+                                        <button class="items-center gap-3 flex w-full px-4 py-2 text-left text-sm leading-5 text-gray-500 hover:bg-gray-100 transition-all duration-150 ease-in-out focus:outline-none focus:bg-gray-100">
+
+                                            <span>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-trash-fill" viewBox="0 0 16 16">
+                                                    <path d="M2.5 1a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1H3v9a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V4h.5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H10a1 1 0 0 0-1-1H7a1 1 0 0 0-1 1H2.5zm3 4a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 .5-.5zM8 5a.5.5 0 0 1 .5.5v7a.5.5 0 0 1-1 0v-7A.5.5 0 0 1 8 5zm3 .5v7a.5.5 0 0 1-1 0v-7a.5.5 0 0 1 1 0z"/>
+                                                </svg>
+                                            </span>
+
+                                            Deletar
+
+                                        </button>
+
+                                </x-slot>
+                            </x-dropdown>
+
+                        </div>
+                    </aside>
 
 
-            </li>
+                </li>
+
+            @endforeach
+
+            @endif
         </ul>
 
     </main>

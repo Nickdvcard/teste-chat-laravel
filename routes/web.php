@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Chat\Index;
 use App\Livewire\Chat\ChatMain;
+use App\Livewire\Users;
 
 Route::get('/', function () {
     return view('welcome');
@@ -21,5 +22,9 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
-Route::get('/chat', Index::class)->name('chat.index');
-Route::get('/chat/{query}', ChatMain::class)->name('chat');
+Route::middleware('auth')->group(function () {
+    Route::get('/chat', Index::class)->name('chat.index');
+    Route::get('/chat/{query}', ChatMain::class)->name('chat'); //query é o id da conversa, não o deu um dos seus participantes
+    Route::get('/users', Users::class)->name('users');
+});
+

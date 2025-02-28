@@ -44,4 +44,8 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function conversa() {
+        return $this->hasMany(Conversa::class, "remetente_id")->orWhere("destinatario_id", $this->id); //chaves estrangeiras para ele referenciar
+    }
 }
