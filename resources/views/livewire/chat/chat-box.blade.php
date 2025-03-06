@@ -1,4 +1,19 @@
-<div class="w-full overflow-hidden">
+<div 
+x-data="{height:0,elementoConversa:document.getElementById('conversa')}"
+
+{{-- x-init roda assim que a página é carregada --}}
+
+x-init="
+    height = elementoConversa.scrollHeight;
+    $nextTick ( () => elementoConversa.scrollTop = height) //O $nextTick é uma propriedade mágica que permite executar uma expressão somente após o Alpine ter atualizado o DOM reativo, útil para interagir com o DOM após as atualizações de dados.
+    
+"
+
+@scroll-bottom.window = "
+     $nextTick(()=> elementoConversa.scrollTop= elementoConversa.scrollHeight);
+"
+
+class="w-full overflow-hidden">
 
     <div class="border-b flex flex-col overflow-y-scroll grow h-full">
 
@@ -22,7 +37,7 @@
                 <x-avatar class="h-9 w-9 lg:w-11 lg:h-11" />
             </div>
     
-            <h6 class="font-bold truncate"> {{fake()->name()}} </h6>
+            <h6 class="font-bold truncate"> {{$conversaSelecionada->getDestinatario()->name}} </h6>  {{-- Conversa selecionada, que vem da blade main, retorna uma conversa, aí podemos chamar metodos contidos nesse model--}}
         </div>
     </header>
     
@@ -30,13 +45,34 @@
     
     {{-- Body--}} {{-- @class pode condicionalmente carregar atributos css baseado no valor de variaveis--}}
     
-    <main class="flex flex-col gap-3 p-2.5 overflow-y-auto  flex-grow overscroll-contain overflow-x-hidden w-full my-auto">
+    <main id="conversa" class="flex flex-col gap-3 p-2.5 overflow-y-auto  flex-grow overscroll-contain overflow-x-hidden w-full my-auto">
     
+        @if ($mensagensCarregadas) {{-- se existe mensagens --}}
+
+        @php
+            $mensagemAnterior= null;
+        @endphp
+
+        @foreach ($mensagensCarregadas as $key => $mensagem) 
+
+        @if ($key > 0)
+
+        @php
+            $mensagemAnterior= $mensagensCarregadas->get($key - 1); //pra verificar quando pode ofuscar ou não
+        @endphp
+
+        @endif
+
         <div @class([
-            'max-w-[85%] md:max-w-[78%] flex w-auto gap-2 relative mt-2',
+            'max-w-[85%] md:max-w-[75%] flex w-auto gap-2 relative mt-2',
+            'ml-auto' => $mensagem->remetente_id === Auth::id()
         ]) >
     
-        <div @class(['shrink-0',])>
+        <div @class([
+            'shrink-0',
+            'invisible' => $mensagemAnterior?->remetente_id == $mensagem->remetente_id,
+            'hidden' => $mensagem->remetente_id === Auth::id()
+        ])>
     
             <x-avatar />
     
@@ -46,51 +82,66 @@
             {{-- Corpo da mensagem--}}
     
         <div @class(['flex flex-wrap text-[15px]  rounded-xl p-2.5 flex flex-col text-black bg-[#f6f6f8fb]',
-            'rounded-bl-none border  border-gray-200/40 '=>false,
-            'rounded-br-none bg-blue-500/80 text-white'=>true  {{-- Condicionalmente muda o valor do balão de texto dependendo de quem o enviou --}}
+            'rounded-bl-none border  border-gray-200/40 '=> ![$mensagem->remetente_id === Auth::id()],
+            'rounded-br-none bg-blue-500/80 text-white'=> $mensagem->remetente_id === Auth::id()  {{-- Condicionalmente muda o valor do balão de texto dependendo de quem o enviou --}}
         ])>
     
         <p class="whitespace-normal truncate text-sm md:text-base tracking-wide lg:tracking-normal">
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Asperiores est laudantium nobis harum nemo quaerat, provident, nam molestiae error omnis nisi repudiandae illo! Nostrum quod earum officia, nobis quaerat suscipit!   
+            {{$mensagem->corpo}}
         </p>
     
-        <div class="ml-auto flex gap-2">
+        <div class="ml-auto flex gap-2 pt-1">
     
             <p @class([
                 'text-xs ',
-                'text-gray-500'=>false,
-                'text-white'=>true,
+                'text-gray-500'=> ![$mensagem->remetente_id === Auth::id()],
+                'text-white'=> $mensagem->remetente_id === Auth::id(),
             ]) >
     
-                4:20 am
+                {{$mensagem->created_at->format('g:i a')}}  {{-- formata a hora no formato AM/PM --}}
     
             </p>
     
     
         {{-- Checar o status da mensagem, apenas ae ela foi eniada pelo usuário dessa session--}}
+
+        @if ($mensagem->remetente_id === Auth::id())
     
-        <div>
-    
-        {{-- Dois Risquinhos--}}
-    
-        <span @class('text-gray-200')>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/>
-                <path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
-            </svg>
-        </span>
-    
-        {{-- Um risquinho --}}
-        {{-- <span @class('text-gray-200')>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
-                <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
-            </svg>
-        </span>
-         --}}
-    
+            @if ($mensagem->foiLido())
+            
+            {{-- Dois Risquinhos--}}
+        
+            <span @class('text-gray-200')>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                    <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/>
+                    <path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
+                </svg>
+            </span>
+
+            @else 
+        
+            {{-- Um risquinho --}}
+
+            <span @class('text-gray-200')>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+                    <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+                </svg>
+            </span>
+
+            @endif
+           
+        
+        @endif
+
         </div>
     
         </div>
+    
+        </div>
+
+        @endforeach
+
+        @endif
     
     </main>
     
@@ -103,13 +154,16 @@
         <div class=" p-2 border-t">
 
             {{-- Form para enviar a mensagem--}}
-            <form method="POST" autocapitalize="off">
+            <form 
+             x-data="{body:@entangle('body')}"         {{-- Entangle permite trocar/compartilhar caracteristicas entre alpine e livewire .... no livewire 3 tira o defer--}}
+             @submit.prevent="console.log('Alpine funcionando'); $wire.enviarMensagem()"  {{-- Ao enviar o fomr, vai chamar esse metodo no backend desse componente livewire --}}
+            method="POST" autocapitalize="off">
                 @csrf
-
                 <input type="hidden" autocomplete="false" style="display:none">
 
                 <div class="grid grid-cols-12">
                      <input 
+                            x-model="body"
                             type="text"
                             autocomplete="off"
                             autofocus
@@ -118,7 +172,7 @@
                             class="col-span-10 bg-gray-100 border-0 outline-0 focus:border-0 focus:ring-0 hover:ring-0 rounded-lg  focus:outline-none"
                      >
 
-                     <button class="col-span-2" type='submit'>Send</button>
+                     <button x-bind:disabled="body.trim().length == 0" class="col-span-2" type='submit'>Enviar</button> {{--É para não deixar enviar se a parte de mensagem (body) estiver vazia--}}
 
                 </div>
 

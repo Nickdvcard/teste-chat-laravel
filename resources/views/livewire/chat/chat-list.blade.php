@@ -1,5 +1,20 @@
 <div 
-x-data="{type:'all'}" class="flex flex-col transition-all h-full overflow-hidden">
+x-data="{type:'all'}" 
+
+x-init="setTimeout(() => { 
+            let conversaId = @json($conversaSelecionada ? $conversaSelecionada->id : null); //O json no Blade do Laravel é um helper que converte dados PHP em JSON para serem utilizados diretamente no JavaScript dentro da view. Ele é útil quando você precisa passar dados do backend para o frontend de forma segura e compatível com JavaScript. 
+
+            let conversaAtual = document.getElementById('conversa-' + conversaId); 
+            if (conversaAtual) {
+                conversaAtual.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+}, 150);" 
+{{-- Dar um tempo antes dar scroll pra conversa selecionada, para carregar o resto da página (Alpine)--}}
+
+class="flex flex-col transition-all h-full overflow-hidden">
+
+
     <header class="px-3 z-10 bg-white sticky top-0 w-full py-2">
         <div class="border-b justify-between flex items-center pb-2">
 
@@ -38,9 +53,11 @@ x-data="{type:'all'}" class="flex flex-col transition-all h-full overflow-hidden
 
             @if ($conversas) {{--ve se ele tem conversa para carregar com loop --}}
 
-            @foreach ($conversas as $conversa)
+            @foreach ($conversas as $conversa) 
 
-                <li class="py-3 hover:bg-gray-50 rounded-2xl dark:hover:bg-gray-700/70 transition-colors duration-150 flex gap-4 relative w-full cursor-pointer px- {{$conversa->id == $conversaSelecionada->id ? 'bg-gray-100/90' : ''}}"> {{-- A conversa qur tiver o idigual da selecionada vai receber um destaque --}}
+                <li 
+                 id="conversa-{{$conversa->id}}" wire:key="{{$conversa->id}}" {{-- dar scroll para essa conversa quando ela for selecionada --}}
+                class="py-3 hover:bg-gray-50 rounded-2xl dark:hover:bg-gray-700/70 transition-colors duration-150 flex gap-4 relative w-full cursor-pointer px- {{$conversa->id == $conversaSelecionada?->id ? 'bg-gray-100/90' : ''}}"> {{-- A conversa qur tiver o id igual da selecionada vai receber um destaque --}}
                     {{-- Na esquerda avatar, na direia os detalhes--}}
                     <a href="#" class="shrink-0">
                         <x-avatar  src="https://i1.sndcdn.com/artworks-LnLz9a9cajXZs4f7-ht8G0Q-t500x500.jpg"/>
