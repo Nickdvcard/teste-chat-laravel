@@ -9,6 +9,16 @@ x-init="setTimeout(() => {
                 conversaAtual.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
 
+            //ouve evento de mesmo nome do backend; tem que ter esse nome de scroll-bottom mas não sei o motivo 
+            Livewire.on('scroll-bottom', () => {
+
+                setTimeout(() => {
+                    let chatList = document.getElementById('chat-list');
+                    if (chatList) {
+                        chatList.scrollTo({ top: 0, behavior: 'smooth' });
+                }, 900); 
+            });
+
 }, 150);" 
 {{-- Dar um tempo antes dar scroll pra conversa selecionada, para carregar o resto da página (Alpine)--}}
 
@@ -45,7 +55,7 @@ class="flex flex-col transition-all h-full overflow-hidden">
     </header>
 
 
-    <main class=" overflow-y-scroll overflow-hidden grow  h-full relative " style="contain:content">
+    <main id="chat-list" class=" overflow-y-scroll overflow-hidden grow  h-full relative " style="contain:content">
 
         {{-- chatlist --}}
 
@@ -82,29 +92,45 @@ class="flex flex-col transition-all h-full overflow-hidden">
 
                             <div class="flex gap-x-2 items-center">
 
-                                {{-- Dois risquinhos--}}
-                                <span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
-                                        <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0l7-7zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0z"/>
-                                        <path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708z"/>
-                                    </svg>
-                                </span>
-                                
-                                {{-- Um risquinho--}}
-                                {{-- <span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
-                                        <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
-                                    </svg>
-                                </span> --}}
+                                @if ($conversa->mensagem?->last()?->remetente_id == Auth::id()) {{-- se a ultima mensagem da conversa (aquele que mostra no chat-list) foi enviada peo usuario logado; se foi, mostrar nenhum os risquinho, e não mostrar se for mensagem do outro, pois só ele pode ver o status  --}}
+
+                                    {{-- Foi enviada pelo usuário e o destinatário leu--}}
+                                    @if($conversa->ultimaMensagemFoiLidaPeloUsuario())
+
+                                        {{-- Dois risquinhos--}}
+                                        <span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
+                                                <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0l7-7zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0z"/>
+                                                <path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708z"/>
+                                            </svg>
+                                        </span>
+
+                                    {{-- Foi enviada pelo usuário e o destinatário não leu--}}
+                                    @else
+
+                                        {{-- Um risquinho--}}
+                                        <span>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
+                                                <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
+                                            </svg>
+                                        </span>
+                                    
+                                    @endif
+
+                                @endif
 
                                 <p class="grow truncate text-sm font-[100]">
-                                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Dolor asperiores possimus laboriosam tenetur iure tempore voluptatem unde labore quae quis error, fugiat repellendus quisquam enim, eligendi similique velit cupiditate! Nostrum!
+                                    {{$conversa->mensagem?->last()?->corpo ?? ""}}
                                 </p>
 
                                 {{-- Mensagens não lidas--}}
+                                @if ($conversa->mensagensNaoLidasCount() > 0)
+
                                 <span class="font-bold p-px px-2 text-xs shrink-0 rounded-full bg-blue-500 text-white">
-                                    5
+                                    {{$conversa->mensagensNaoLidasCount()}}
                                 </span>
+                                
+                                @endif
 
                             </div>
 

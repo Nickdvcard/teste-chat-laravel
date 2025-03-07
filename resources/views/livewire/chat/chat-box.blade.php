@@ -45,7 +45,38 @@ class="w-full overflow-hidden">
     
     {{-- Body--}} {{-- @class pode condicionalmente carregar atributos css baseado no valor de variaveis--}}
     
-    <main id="conversa" class="flex flex-col gap-3 p-2.5 overflow-y-auto  flex-grow overscroll-contain overflow-x-hidden w-full my-auto">
+    <main 
+     @scroll = "
+
+        {{-- se der scroll até o topo do elemneto atual (main), cahmar a unção que carrega mais mensagens --}}
+
+        scropTop = $el.scrollTop;
+
+        if ($el.scrollTop <= 0) {
+            $wire.carregarMaisMensagens();
+        }
+     "
+    
+     @atualiza-altura-chat.window="
+     antigaAltura = $el.scrollHeight; // Guarda a altura antes de carregar mais conteúdo
+ 
+     // Deixa Alpine.js carregar mais conteúdo primeiro
+
+     //$nextTick é uma propriedade mágica que permite executar uma determinada expressão APÓS o Alpine ter atualizado reativamente o DOM. Isso é útil quando você precisa interagir com o estado do DOM depois que ele já refletiu as atualizações de dados que você fez.
+
+     $nextTick(() => {
+         novaAltura = $el.scrollHeight; // Nova altura após carregar conteúdo
+         diferenca = novaAltura - antigaAltura; // Diferença causada pelo carregamento
+ 
+         $el.scrollTop += diferenca; // Mantém o scroll na mesma posição relativa
+ 
+         console.log('Nova altura: ' + novaAltura + ' | Antiga altura: ' + antigaAltura + ' | ScrollTop ajustado: ' + $el.scrollTop);
+     });
+ "
+ 
+ 
+
+    id="conversa" class="flex flex-col gap-3 p-2.5 overflow-y-auto  flex-grow overscroll-contain overflow-x-hidden w-full my-auto">
     
         @if ($mensagensCarregadas) {{-- se existe mensagens --}}
 

@@ -13,9 +13,38 @@ class ChatBox extends Component
     public $body;
     public $mensagensCarregadas;
 
+    public $variavelPaginacao = 10; //quantidade de mensagens em uma conversa carregadas por vez, para não carregar todas de uma vez e causar lentidão
+
+    protected $listeners = ['carregarMaisMensagens'];
+
+
+
+
+
+    public function carregarMaisMensagens() {
+
+        //só pra ver se chama a função carregarMaisMensagens desencadeada na blade ao dar o scroll pro topo
+        //dd("chamou");
+
+        //aumentar a qunatidade de mensagens carregadas por vez
+        $this->variavelPaginacao += 10;
+
+        //chamar carregarMensagens() para carregar mais mensagens agora que o variavelPaginação foi aumentado
+        $this->carregarMensagens();   
+
+        //atualizar a altura do chat
+        $this->dispatch("atualiza-altura-chat");
+    }
+
     public function carregarMensagens() {
 
-        $this->mensagensCarregadas = Mensagem::where('conversa_id', $this->conversaSelecionada->id)->get(); //carrega as mensagens cujo conversa_id é igual aoid da conversa presentemente selecionada
+        //contar quantas mensagens estão sendo carregadas de uma vez
+        $count = Mensagem::where('conversa_id', $this->conversaSelecionada->id)->count();
+
+        //carrega as mensagens cujo conversa_id é igual ao id da conversa presentemente selecionada
+        //skip ignora as mensagens mais antigas, take limita o número de mensagens carregadas
+        //carrega as mensagens mais recentes, de acordo com a quantidade de mensagens carregadas por vez determinada em variavelPaginacao
+        $this->mensagensCarregadas = Mensagem::where('conversa_id', $this->conversaSelecionada->id)->skip($count - $this->variavelPaginacao)->take($this->variavelPaginacao)->get(); 
     }
 
     public function enviarMensagem() {
@@ -43,6 +72,8 @@ class ChatBox extends Component
 
         //atualizar a chatlist após enviar mensagem 
         $this->dispatch('refresh')->to(ChatList::class);
+
+        $this->dispatch('scroll-bottom')->to(ChatList::class);
 
         // dd($mensagemCriada);
 

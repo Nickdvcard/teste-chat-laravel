@@ -30,4 +30,26 @@ class Conversa extends Model
             return User::firstWhere('id', $this->remetente_id);
         }
     }
+
+    public function ultimaMensagemFoiLidaPeloUsuario() {
+        
+        $user = Auth::user();
+        $ultimaMensagem = $this->mensagem()->latest()->first();
+
+        //ve se a ultima mensagem foi lida pelo outro usuario que a recebeu e se quem enviou foi o presente usuario logado
+        if ($ultimaMensagem) {
+            return $ultimaMensagem->lido_em !== null && $ultimaMensagem->remetente_id === $user->id;
+        } 
+
+        else {
+            return false; //se não tiver ultima mensagem, retorna falso
+        }
+    }
+
+    public function mensagensNaoLidasCount(): int {
+
+        //Pega as mensagens dessa conversa, que tem o usuário logado como destinatário, que não fora lidas, e as contam
+        $mensagensNaoLidas = Mensagem::where('conversa_id', "=", $this->id)->where('destinatario_id', Auth::id())->whereNull('lido_em')->count();
+        return $mensagensNaoLidas;
+    }
 }
