@@ -28,3 +28,4 @@ Route::middleware('auth')->group(function () {
     Route::get('/users', Users::class)->name('users');
 });
 
+

@@ -2,9 +2,11 @@
 
 namespace App\Livewire\Chat;
 
+use App\Events\MensagemEnviada;
 use Livewire\Component;
 use App\Models\Mensagem;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\On;
 
 class ChatBox extends Component
 {
@@ -15,11 +17,16 @@ class ChatBox extends Component
 
     public $variavelPaginacao = 10; //quantidade de mensagens em uma conversa carregadas por vez, para não carregar todas de uma vez e causar lentidão
 
-    protected $listeners = ['carregarMaisMensagens'];
+    public $listeners = ['carregarMaisMensagens'];
 
+    public function listenParaMensagem($event) {
 
+        if (Auth::id() !== (int) $event['destinatarioId']) {
+            return; // Ignora a mensagem se o usuário não for o destinatário
+        }
 
-
+        dd('aaaaaaaaaaaaaa');
+    }
 
     public function carregarMaisMensagens() {
 
@@ -75,6 +82,8 @@ class ChatBox extends Component
 
         $this->dispatch('scroll-bottom')->to(ChatList::class);
 
+        broadcast(new MensagemEnviada($mensagemCriada))->toOthers();
+
         // dd($mensagemCriada);
 
         // dd($this->body);
@@ -83,6 +92,11 @@ class ChatBox extends Component
     public function mount() {
 
         $this->carregarMensagens(); //carregar as mensagens quando entra na conversa
+
+        if ($this->conversaSelecionada) {
+            $this->listeners["echo-private:conversa.{$this->conversaSelecionada->id},MensagemEnviada"] = 'listenParaMensagem';
+        }
+
     }
 
     public function render()
@@ -90,3 +104,4 @@ class ChatBox extends Component
         return view('livewire.chat.chat-box');
     }
 }
+

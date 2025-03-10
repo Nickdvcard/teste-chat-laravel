@@ -48,4 +48,5 @@ class User extends Authenticatable
     public function conversa() {
         return $this->hasMany(Conversa::class, "remetente_id")->orWhere("destinatario_id", $this->id); //chaves estrangeiras para ele referenciar
     }
+
 }
