@@ -25,7 +25,14 @@ class ChatBox extends Component
             return; // Ignora a mensagem se o usuário não for o destinatário
         }
 
-        dd('aaaaaaaaaaaaaa');
+        // Acessar o ID da mensagem
+        $mensagemId = $event['mensagem']['id'];
+
+        // Acessar a mensagem completa
+        $novaMensagem = Mensagem::find($mensagemId);
+
+        $this->mensagensCarregadas->push($novaMensagem);
+
     }
 
     public function carregarMaisMensagens() {
