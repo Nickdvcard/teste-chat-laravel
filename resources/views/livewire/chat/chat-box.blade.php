@@ -1,12 +1,32 @@
+
 <div 
-x-data="{height:0,elementoConversa:document.getElementById('conversa')}"
+
+x-data="{
+    height:0,
+    elementoConversa:document.getElementById('conversa'),
+}"
 
 {{-- x-init roda assim que a página é carregada --}}
 
 x-init="
     height = elementoConversa.scrollHeight;
+    mostrarNotificacao = false;
     $nextTick ( () => elementoConversa.scrollTop = height) //O $nextTick é uma propriedade mágica que permite executar uma expressão somente após o Alpine ter atualizado o DOM reativo, útil para interagir com o DOM após as atualizações de dados.
     
+    Echo.private('conversa.{{ $conversaSelecionada->id }}')
+        .listen('MensagemLida', (e) => {
+            setTimeout(() => {
+                $wire.call('atualizar');
+            }, 1000); // Ocultar a notificação após 2 segundos
+        });
+
+    Echo.private('conversa.{{ $conversaSelecionada->id }}')
+        .listen('MensagemLida', (e) => {
+            console.log('Ler mensagens ao entrar na conversa');
+            setTimeout(() => {
+                $wire.call('atualizar');
+            }, 1000); // Aguardar 1 segundo para ler as mensagens
+        });
 "
 
 @scroll-bottom.window = "
@@ -20,6 +40,7 @@ class="w-full overflow-hidden">
     {{-- Header--}}
     
     <header class="w-full sticky inset-x-0 flex pb-[5px] pt-[5px] top-0 z-10 bg-white border-b " >
+
         <div class="flex w-full items-center px-2 lg:px-4 gap-2 md:gap-5">
             <a class="shrink-0 lg:hidden" href="#">
     
@@ -40,15 +61,12 @@ class="w-full overflow-hidden">
             <h6 class="font-bold truncate"> {{$conversaSelecionada->getDestinatario()->name}} </h6>  {{-- Conversa selecionada, que vem da blade main, retorna uma conversa, aí podemos chamar metodos contidos nesse model--}}
         </div>
     </header>
-    
-    
-    
+
     {{-- Body--}} {{-- @class pode condicionalmente carregar atributos css baseado no valor de variaveis--}}
     
     <main 
      @scroll = "
-
-        {{-- se der scroll até o topo do elemneto atual (main), cahmar a unção que carrega mais mensagens --}}
+        {{-- se der scroll até o topo do elemneto atual (main), chamar a função que carrega mais mensagens --}}
 
         scropTop = $el.scrollTop;
 
@@ -58,6 +76,7 @@ class="w-full overflow-hidden">
      "
     
      @atualiza-altura-chat.window="
+
      antigaAltura = $el.scrollHeight; // Guarda a altura antes de carregar mais conteúdo
  
      // Deixa Alpine.js carregar mais conteúdo primeiro
@@ -74,8 +93,6 @@ class="w-full overflow-hidden">
      });
  "
  
- 
-
     id="conversa" class="flex flex-col gap-3 p-2.5 overflow-y-auto  flex-grow overscroll-contain overflow-x-hidden w-full my-auto">
     
         @if ($mensagensCarregadas) {{-- se existe mensagens --}}
@@ -94,7 +111,9 @@ class="w-full overflow-hidden">
 
         @endif
 
-        <div @class([
+        <div 
+        wire:key="{{time().$key}}" {{-- Tem que rodar artisan queue:work para processar --}}
+        @class([
             'max-w-[85%] md:max-w-[75%] flex w-auto gap-2 relative mt-2',
             'ml-auto' => $mensagem->remetente_id === Auth::id()
         ]) >
@@ -111,7 +130,7 @@ class="w-full overflow-hidden">
     
     
             {{-- Corpo da mensagem--}}
-    
+
         <div @class(['flex flex-wrap text-[15px]  rounded-xl p-2.5 flex flex-col text-black bg-[#f6f6f8fb]',
             'rounded-bl-none border  border-gray-200/40 '=> ![$mensagem->remetente_id === Auth::id()],
             'rounded-br-none bg-blue-500/80 text-white'=> $mensagem->remetente_id === Auth::id()  {{-- Condicionalmente muda o valor do balão de texto dependendo de quem o enviou --}}
@@ -133,16 +152,17 @@ class="w-full overflow-hidden">
     
             </p>
     
-    
-        {{-- Checar o status da mensagem, apenas ae ela foi eniada pelo usuário dessa session--}}
+        {{-- Checar o status da mensagem, apenas se ela foi enviada pelo usuário dessa session--}}
 
         @if ($mensagem->remetente_id === Auth::id())
-    
-            @if ($mensagem->foiLido())
+
+        <div>
             
-            {{-- Dois Risquinhos--}}
-        
-            <span @class('text-gray-200')>
+            @if ($mensagem->foiLido())
+
+            <!-- Ícones de "tick" -->
+            <span class="text-gray-200">
+                <!-- Icone de 'dois tique' -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2-all" viewBox="0 0 16 16">
                     <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0"/>
                     <path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708"/>
@@ -151,16 +171,15 @@ class="w-full overflow-hidden">
 
             @else 
         
-            {{-- Um risquinho --}}
-
-            <span @class('text-gray-200')>
+            <span class="text-gray-200">
+                <!-- Icone de 'um tique' -->
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-check2" viewBox="0 0 16 16">
                     <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
                 </svg>
             </span>
 
             @endif
-           
+        </div>
         
         @endif
 
@@ -203,7 +222,7 @@ class="w-full overflow-hidden">
                             class="col-span-10 bg-gray-100 border-0 outline-0 focus:border-0 focus:ring-0 hover:ring-0 rounded-lg  focus:outline-none"
                      >
 
-                     <button x-bind:disabled="body.trim().length == 0" class="col-span-2" type='submit'>Enviar</button> {{--É para não deixar enviar se a parte de mensagem (body) estiver vazia--}}
+                     <button x-bind:disabled="body.length <= 0" class="col-span-2" type='submit'>Enviar</button> {{--É para não deixar enviar se a parte de mensagem (body) estiver vazia--}}
 
                 </div>
 

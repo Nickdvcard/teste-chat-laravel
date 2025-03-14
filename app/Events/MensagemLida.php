@@ -11,21 +11,18 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-//ShouldBroadcastNow é instantâneo, enquanto ShouldBroadcast leva um tempo para ser transmitido
-class MensagemEnviada implements ShouldBroadcastNow
+class MensagemLida implements ShouldBroadcastNow
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-    public $mensagem;
-    public $destinatarioId;
+    public $conversaId;
 
     /**
      * Create a new event instance.
      */
-    public function __construct($mensagem) //recebe a mensagem criada do ChatBox
+    public function __construct($conversaId)
     {
-        $this->mensagem = $mensagem;
-        $this->destinatarioId = $mensagem->destinatario_id; // Adiciona o ID do destinatário
+        $this->conversaId = $conversaId;
     }
 
     /**
@@ -35,18 +32,15 @@ class MensagemEnviada implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-        //dd($this->mensagem);
         return [
-            new PrivateChannel('conversa.' . $this->mensagem->conversa_id), //canal privado para o destinatário
-            new PrivateChannel('usuario.' . $this->mensagem->destinatario_id) // Canal do usuário
+            new PrivateChannel('conversa.' . $this->conversaId),
         ];
     }
 
     public function broadcastWith()
     {
         return [
-            'mensagem' => $this->mensagem,
-            'destinatarioId' => $this->destinatarioId, // Inclui o ID do destinatário na transmissão
+            'conversaId' => $this->conversaId,
         ];
     }
 }

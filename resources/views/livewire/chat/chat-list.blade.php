@@ -3,6 +3,7 @@ x-data="{type:'all'}"
 
 x-init="setTimeout(() => { 
             let conversaId = @json($conversaSelecionada ? $conversaSelecionada->id : null); //O json no Blade do Laravel é um helper que converte dados PHP em JSON para serem utilizados diretamente no JavaScript dentro da view. Ele é útil quando você precisa passar dados do backend para o frontend de forma segura e compatível com JavaScript. 
+            let userId = @json(Auth::id()); //Pega o id do usuário logado
 
             let conversaAtual = document.getElementById('conversa-' + conversaId); 
             if (conversaAtual) {
@@ -16,10 +17,28 @@ x-init="setTimeout(() => {
                     let chatList = document.getElementById('chat-list');
                     if (chatList) {
                         chatList.scrollTo({ top: 0, behavior: 'smooth' });
+                    }
                 }, 900); 
             });
 
-}, 150);" 
+        // Escuta mensagens da conversa atual
+        Echo.private('conversa.' + conversaId)
+            .listen('MensagemEnviada', (e) => {
+                console.log('atualiza sidebar');
+                $wire.call('atualizar');
+            });
+
+        // Escuta mensagens enviadas para o usuário (independente da conversa)
+        Echo.private('usuario.' + userId)
+            .listen('MensagemEnviada', (e) => {
+                console.log('atualiza sidebar');
+                $wire.call('atualizar');
+            });
+
+}, 150);
+
+" 
+
 {{-- Dar um tempo antes dar scroll pra conversa selecionada, para carregar o resto da página (Alpine)--}}
 
 class="flex flex-col transition-all h-full overflow-hidden">

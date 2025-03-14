@@ -2,7 +2,9 @@
 
 namespace App\Livewire\Chat;
 
+use App\Events\LerMensagensAoEntrarConversa;
 use App\Events\MensagemEnviada;
+use App\Events\MensagemLida;
 use Livewire\Component;
 use App\Models\Mensagem;
 use Illuminate\Support\Facades\Auth;
@@ -17,13 +19,20 @@ class ChatBox extends Component
 
     public $variavelPaginacao = 10; //quantidade de mensagens em uma conversa carregadas por vez, para não carregar todas de uma vez e causar lentidão
 
-    public $listeners = ['carregarMaisMensagens'];
+    public $listeners = ['carregarMaisMensagens', 'mensagemLida'];
+
+    public function atualizar() {
+
+        $this->dispatch("refresh");
+    }
 
     public function listenParaMensagem($event) {
 
-        if (Auth::id() !== (int) $event['destinatarioId']) {
-            return; // Ignora a mensagem se o usuário não for o destinatário
-        }
+        // if (Auth::id() !== (int) $event['destinatarioId']) {
+        //     return; // Ignora a mensagem se o usuário não for o destinatário
+        // }
+
+        $this->dispatch("scroll-bottom");
 
         // Acessar o ID da mensagem
         $mensagemId = $event['mensagem']['id'];
@@ -33,6 +42,13 @@ class ChatBox extends Component
 
         $this->mensagensCarregadas->push($novaMensagem);
 
+        $novaMensagem->lido_em = now();
+        $novaMensagem->save();
+
+        //informar ao outro usuário que a mensagem foi lida
+        //naõ faz lsitem que nem o ouro pois tem que mostrar a notificação no front aí é melhor chamar por lá
+        //O método toOthers é usado em conjunto com o método broadcast para enviar um evento de broadcast para todos os outros usuários conectados ao canal, exceto o usuário que disparou o evento.
+        broadcast(new MensagemLida($novaMensagem->conversa_id))->toOthers();
     }
 
     public function carregarMaisMensagens() {
@@ -63,7 +79,9 @@ class ChatBox extends Component
 
     public function enviarMensagem() {
 
-        $this->validate(['body' => 'required|string']);
+        if (empty(trim($this->body))) {
+            return;
+        }
 
         $mensagemCriada = Mensagem::create([
             "conversa_id" => $this->conversaSelecionada->id,
@@ -104,6 +122,19 @@ class ChatBox extends Component
             $this->listeners["echo-private:conversa.{$this->conversaSelecionada->id},MensagemEnviada"] = 'listenParaMensagem';
         }
 
+        // Marcar mensagens como lidas
+        $this->marcarMensagensComoLidasAoEntrarNaConversa();
+    }
+
+    public function marcarMensagensComoLidasAoEntrarNaConversa() {
+        // Verifica se há mensagens não lidas para o usuário logado nesta conversa
+
+        Mensagem::where('conversa_id', $this->conversaSelecionada->id)
+        ->where('destinatario_id', Auth::id()) // Supondo que o ID do destinatário seja armazenado
+        ->whereNull('lido_em')  // Garante que só as não lidas sejam alteradas
+        ->update(['lido_em' => now()]); // Atualiza para 'lida'
+    
+        broadcast(new MensagemLida($this->conversaSelecionada->id))->toOthers();
     }
 
     public function render()

@@ -12,6 +12,11 @@ class ChatList extends Component
     public $conversaSelecionada;
     public $query;
 
+    public function atualizar() {
+
+        $this->dispatch("refresh");
+    }
+
     public function render()
     {
         $user = Auth::user();
