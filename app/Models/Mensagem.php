@@ -16,12 +16,10 @@ class Mensagem extends Model
         'remetente_id',
         'destinatario_id',
         'lido_em',
-        'destinatario_deletado_em',
-        'remetente_deletado_em',
         'corpo',
     ];
 
-    protected $datas = ["lido_em",'destinatario_deletado_em','remetente_deletado_em'];
+    protected $datas = ["lido_em"];
 
     public function conversa() {
         return $this->belongsTo(Conversa::class);

@@ -99,7 +99,7 @@ class ChatBox extends Component
         $this->mensagensCarregadas->push($mensagemCriada);
 
         //sinalizar que a conversa foi atualizada
-        $this->conversaSelecionada->updated_at = now();
+        $this->conversaSelecionada->ultima_mensagem = now();
         $this->conversaSelecionada->save();
 
         //atualizar a chatlist após enviar mensagem 

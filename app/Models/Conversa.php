@@ -14,6 +14,8 @@ class Conversa extends Model
     protected $fillable = [
         "remetente_id",
         "destinatario_id",
+        "remetente_arquivou",
+        "destinatario_arquivou",
     ];
 
     public function mensagem() {

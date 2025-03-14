@@ -17,6 +17,8 @@ return new class extends Migration
             $table->foreign('remetente_id')->references('id')->on('users');
             $table->unsignedBigInteger('destinatario_id');
             $table->foreign('destinatario_id')->references('id')->on('users');
+            $table->boolean('remetente_arquivou')->default(0);
+            $table->boolean('destinatario_arquivou')->default(0);
             $table->softDeletes(); //"deleta" mas ainda mantém dados no banco
             $table->timestamps();
         });
